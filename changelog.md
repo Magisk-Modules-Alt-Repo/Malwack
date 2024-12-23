@@ -1,3 +1,6 @@
+## v4.2.6
+- Updated hosts file
+
 ## v4.2.5
 - Updated hosts file
 
