@@ -12,6 +12,7 @@
   <ul>
       <li>Blocks ads system-wide on all websites and all apps!</li>
       <li>Make your phone faster by not connecting to many ad domains.</li>
+      <li>Automatic Updates every 24 hours -- Updates apply after reboot</li>
       <li>Blocks ads, malware, trackers, P*rn sites, fake news sites, and unsafe gambling sites.</li>
       <li>Regular Updates on host files to keep up with the internet's worst and new fears.</li>
       <li>Plus, more to come soon!</li>
@@ -23,7 +24,6 @@
   <ul>
     <li>Smaller and more effective hosts file</li>
     <li>Custom user hosts files</li>
-    <li>Automatic Updates of hosts file every 24 hours or on reboot</li>
     <li>Different levels of blocking, e.g. Low, Normal, Moderate, Extreme.
     <li>Mobile app for easy access to module settings</li>
     <li>(Maybe) Custom free ad-blocking VPN and DNS with maximum security</li>
