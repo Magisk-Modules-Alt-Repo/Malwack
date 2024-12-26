@@ -35,7 +35,7 @@ block_porn() {
 
     if curl -s "$HOST_URL" -o "$TEMP_FILE"; then
         cat "$TEMP_FILE" >> "$HOSTS_FILE"
-        cat "$HOST_URL" >> "$URLS_FILE"
+        echo -e "$HOST_URL" >> "$URLS_FILE"
         chmod 644 "$HOSTS_FILE"
         log "Pornographic sites have been blocked in the hosts file."
         rm -f "$TEMP_FILE"
@@ -71,7 +71,7 @@ restore_default() {
         [ -f "$HOSTS_FILE" ] && rm -f "$HOSTS_FILE"
         cp "$TEMP_FILE" "$HOSTS_FILE"
         chmod 644 "$HOSTS_FILE"
-        cat "$HOST_ONLINE_URL" > "$URLS_FILE"
+        echo "$HOST_ONLINE_URL" > "$URLS_FILE"
         log "Hosts file restored to the default state and updated successfully."
         rm -f "$TEMP_FILE"
     else
