@@ -1,3 +1,13 @@
+## v5.0.0
+- Auto update every 24 hours applies after reboot
+- Added service.sh to setup cron
+- Added logging
+- Updated hosts file
+- Removed added commands using built-in BusyBox
+
+## v4.2.8
+- Updated hosts file
+
 ## v4.2.7
 - Updated hosts file
 
