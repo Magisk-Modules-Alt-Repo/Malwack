@@ -1,29 +1,108 @@
 #!/system/bin/sh
 
-# Define paths
-hosts_file="/data/adb/modules/Malwack/system/etc/hosts"
-tmp_dir="/data/local/tmp"
-log_file="/data/adb/malwack.log"
-merged_hosts="/data/local/tmp/hosts"
+# === Define Paths ===
+HOSTS_FILE="$MODDIR/system/etc/hosts"
+TMP_DIR="/data/local/tmp"
+LOG_FILE="/data/adb/malwack.log"
+MERGED_HOSTS="/data/local/tmp/hosts"
+URLS_FILE="/data/adb/modules/Malwack/urls.txt"
 
-# External Hosts URLs
-URL1="https://hosts.ubuntu101.co.za/hosts"
-URL2="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-URL3="https://www.github.developerdan.com/hosts/lists/ads-and-tracking-extended.txt"
+# === Logging Function ===
+log() {
+    echo "[$(date '+%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
 
-# Download and combine hosts files
-echo "Downloading and merging hosts files..." >> "$log_file"
-curl -s "$URL1" > "$tmp_dir/hosts1" || { echo "Failed to download URL1" >> "$log_file"; exit 1; }
-curl -s "$URL2" > "$tmp_dir/hosts2" || { echo "Failed to download URL2" >> "$log_file"; exit 1; }
-curl -s "$URL3" > "$tmp_dir/hosts3" || { echo "Failed to download URL3" >> "$log_file"; exit 1; }
+# === Abort Function for Critical Errors ===
+abort() {
+    log "Error: $1"
+    exit 1
+}
 
-# Merge hosts files into a temporary file
-cat "$tmp_dir/hosts1" "$tmp_dir/hosts2" "$tmp_dir/hosts3" >> hosts
+# === Download Hosts Files from `urls.txt` ===
+download_hosts() {
+    log "Starting hosts download from $URLS_FILE..."
+    
+    if [ ! -f "$URLS_FILE" ]; then
+        abort "URLs file not found at $URLS_FILE"
+    fi
+    
+    index=1
+    while IFS= read -r url || [ -n "$url" ]; do
+        # Skip empty lines and comments
+        case "$url" in
+            \#* | "") continue ;;  # Skip lines starting with '#' or empty lines
+        esac
+        
+        target="$TMP_DIR/hosts$index"
+        log "Downloading hosts file from $url..."
+        curl -s "$url" -o "$target" || {
+            log "Failed to download $url"
+            continue
+        }
+        log "Downloaded hosts$index successfully."
+        index=$((index + 1))
+    done < "$URLS_FILE"
+    
+    if [ $index -eq 1 ]; then
+        abort "No valid URLs found in $URLS_FILE"
+    fi
+}
 
-cat $tmp_dir/hosts >> $hosts_file
+# === Merge Hosts Files ===
+merge_hosts() {
+    log "Merging downloaded hosts files..."
+    cat "$TMP_DIR"/hosts* | grep -vE '^[[:space:]]*#' | grep -vE '^[[:space:]]*$' | sort | uniq > "$MERGED_HOSTS" || {
+        log "Failed to merge hosts files"
+        exit 1
+    }
+    log "Hosts files merged successfully."
+}
 
-# Clean up temporary files
-rm "$tmp_dir/hosts1" "$tmp_dir/hosts2" "$tmp_dir/hosts3" 
+# === Apply Merged Hosts File via Magisk Overlay ===
+apply_hosts_magisk() {
+    log "Applying merged hosts file via Magisk overlay..."
+    mkdir -p "$(dirname "$HOSTS_FILE")"
+    cp "$MERGED_HOSTS" "$HOSTS_FILE" || {
+        log "Failed to copy merged hosts file to $HOSTS_FILE"
+        exit 1
+    }
+    chmod 644 "$HOSTS_FILE"
+    chown root:root "$HOSTS_FILE"
+    log "Merged hosts file applied successfully."
+}
 
-# Final log message
-echo "Hosts file updated successfully with permissions!" >> "$log_file"
+# === Cleanup Temporary Files ===
+cleanup() {
+    log "Cleaning up temporary files..."
+    rm -f "$TMP_DIR"/hosts* "$MERGED_HOSTS"
+    log "Temporary files cleaned successfully."
+}
+
+# === Update Module Description ===
+update_module_prop() {
+    MODULE_PROP="$MODDIR/module.prop"
+    log "Updating module.prop with current date..."
+    string="description=(Updated: $(date)) Ever wanted to get rid of those annoying ads that pop every 2 seconds in mobile games you're playing or websites you are visiting? Well, look no further with Malwack, your defense against ads!"
+    sed -i "s/^description=.*/$string/g" "$MODULE_PROP"
+    log "module.prop updated successfully."
+}
+
+# === Main Logic ===
+log "Starting dynamic hosts update..."
+
+# Ensure Root Permissions
+if [ "$(id -u)" -ne 0 ]; then
+    abort "Root access is required to run this script."
+fi
+
+# Download, Merge, and Apply Hosts
+download_hosts
+merge_hosts
+apply_hosts_magisk
+cleanup
+update_module_prop
+
+log "Dynamic hosts update completed successfully!"
+echo ""
+echo "Hosts file updated successfully!"
+echo ""

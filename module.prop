@@ -1,7 +1,7 @@
 id=Malwack
 name=Malwack | Anti-Malware & Ad Blocker
-version=v5.0.0
-versionCode=26
+version=v5.0.1
+versionCode=27
 author=Person0z
-description=Say goodbye to unwanted digital pests and send malware running with Malwack, your virtual fly swatter for the cyber world. It's like having a bouncer for your device – no entry for malware, bugs, or party crashers!
+description=Ever wanted to get rid of those annoying ads that pop every 2 seconds in mobile games you're playing or websites you are visiting? Well, look no further with Malwack, your defense against ads!
 updateJson=https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/Malwack/main/update.json

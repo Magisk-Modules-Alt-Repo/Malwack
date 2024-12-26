@@ -1,32 +1,38 @@
+## v5.0.1
+- added action.sh
+- added urls.txt which will allow you to define your own custom files to download
+---
 ## v5.0.0
 - Auto update every 24 hours applies after reboot
 - Added service.sh to setup cron
 - Added logging
 - Updated hosts file
 - Removed added commands using built-in BusyBox
-
+---
 ## v4.2.8
 - Updated hosts file
-
+---
 ## v4.2.7
 - Updated hosts file
-
+---
 ## v4.2.6
 - Updated hosts file
-
+---
 ## v4.2.5
 - Updated hosts file
-
+---
 ## v4.2.4
 - Updated hosts file
-
+---
 ## v4.2.3
 - Updated hosts file
-
+---
 ## v4.2.2
 - Updated hosts file
+---
 ## v4.2.1
 - Fixed the help command adding the ``whitelist`` command on it.
+---
 ## v4.2
 - Updated Hosts file and added a new hosts link
 ---

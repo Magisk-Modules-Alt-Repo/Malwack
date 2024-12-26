@@ -1,0 +1,3 @@
+https://hosts.ubuntu101.co.za/hosts
+https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+https://www.github.developerdan.com/hosts/lists/ads-and-tracking-extended.txt
