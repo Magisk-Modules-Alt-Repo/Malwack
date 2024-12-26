@@ -1,3 +1,5 @@
+## v5.0.2
+- Update main command, fixed issues with it not loading hosts file and giving errors, updated and formatted main file, auto-save when setting to block p*rn so when you update you won't need to do it again.
 ## v5.0.1
 - added action.sh
 - added urls.txt which will allow you to define your own custom files to download

@@ -1,135 +1,112 @@
 #!/system/bin/sh
 
-# Define the path to the hosts file
-hosts_file="/etc/hosts"
-temp="/etc/hosts.tmp/hosts.txt"
+# === Configuration ===
+HOSTS_FILE="/data/adb/modules/Malwack/system/etc/hosts"
+TEMP_FILE="$(mktemp)"
+LOG_FILE="/data/adb/malwack.log"
+URLS_FILE="/data/adb/modules/Malwack/urls.txt"
 
-if [ $# -eq 0 ]; then
+# === Logging Function ===
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+# === Abort on Error ===
+abort() {
+    log "Error: $1"
+    exit 1
+}
+
+# === Restore Original Hosts File ===
+restore_original() {
+    log "Restoring the hosts file to its original state..."
+    chmod 644 "$HOSTS_FILE" || abort "Failed to set permissions on $HOSTS_FILE"
+    [ -f "$HOSTS_FILE" ] && rm -f "$HOSTS_FILE"
+    echo "127.0.0.1 localhost" > "$HOSTS_FILE"
+    echo "::1 localhost" >> "$HOSTS_FILE"
+    chmod 644 "$HOSTS_FILE"
+    log "Hosts file restored to its original state."
+}
+
+# === Block Pornographic Sites ===
+block_porn() {
+    log "Blocking pornographic websites..."
+    HOST_URL="https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts"
+
+    if curl -s "$HOST_URL" -o "$TEMP_FILE"; then
+        cat "$TEMP_FILE" >> "$HOSTS_FILE"
+        cat "$HOST_URL" >> "$URLS_FILE"
+        chmod 644 "$HOSTS_FILE"
+        log "Pornographic sites have been blocked in the hosts file."
+        rm -f "$TEMP_FILE"
+    else
+        abort "Failed to download blocking hosts file from $HOST_URL."
+    fi
+}
+
+# === Whitelist a Domain ===
+whitelist_domain() {
+    DOMAIN="$1"
+    [ -z "$DOMAIN" ] && abort "Please provide a domain to whitelist."
+
+    if grep -q "0\.0\.0\.0 $DOMAIN" "$HOSTS_FILE"; then
+        sed "/0\.0\.0\.0 $DOMAIN/d" "$HOSTS_FILE" > "$TEMP_FILE"
+        mv "$TEMP_FILE" "$HOSTS_FILE"
+        chmod 644 "$HOSTS_FILE"
+        log "Domain $DOMAIN has been whitelisted."
+    else
+        log "Domain $DOMAIN was not found in the hosts file."
+    fi
+}
+
+# === Restore Default Hosts File ===
+restore_default() {
+    log "Restoring the hosts file to its default state with updates..."
+    HOST_URL="https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/Malwack/main/system/etc/hosts"
+    HOST_ONLINE_URL="https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/Malwack/refs/heads/main/urls.txt"
+    TIMEOUT=60
+
+    chmod 644 "$HOSTS_FILE"
+    if timeout "$TIMEOUT" curl -s "$HOST_URL" -o "$TEMP_FILE"; then
+        [ -f "$HOSTS_FILE" ] && rm -f "$HOSTS_FILE"
+        cp "$TEMP_FILE" "$HOSTS_FILE"
+        chmod 644 "$HOSTS_FILE"
+        cat "$HOST_ONLINE_URL" > "$URLS_FILE"
+        log "Hosts file restored to the default state and updated successfully."
+        rm -f "$TEMP_FILE"
+    else
+        abort "Failed to download the default hosts file from $HOST_URL."
+    fi
+}
+
+# === Display Help Menu ===
+show_help() {
     echo "Usage: malwack [--restore[-original | -default] | --blockporn | --whitelist <domain> | --help]"
-    echo "--restore-default: Restore the hosts file to the modules default state & updates it."
     echo "--restore-original: Restore the hosts file to its original state. (No blocking)"
+    echo "--restore-default: Restore the hosts file to the module's default state & update it."
     echo "--blockporn: Block pornographic websites by adding entries to the hosts file."
     echo "--whitelist <domain>: Remove the specified domain from the hosts file."
     echo "--help: Display this help message."
-else
-    case "$1" in
-        --restore-original)
-            # Remove the current hosts file if it exists
+}
 
-            chmod 644 "$hosts_file"
-            echo "Restored permissions for $hosts_file"
-
-            if [ -f "$hosts_file" ]; then
-                rm -f "$hosts_file"
-                echo "Removed $hosts_file"
-            fi
-
-            # Create a new hosts file with default localhost entries
-            echo "127.0.0.1 localhost" > "$hosts_file"
-            echo "::1 localhost" >> "$hosts_file"
-
-            # Restore the original permissions
-            chmod 644 "$hosts_file"
-            echo "Restored permissions for $hosts_file"
-
-            # Notify completion
-            echo "Restored $hosts_file to its original state"
-            ;;
-        --blockporn)
-            host="https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/porn-only/hosts"
-
-            # Download the hosts file with curl renaming it to hosts.txt
-            if curl -o hosts.txt "$host"; then
-                # Check if the file was downloaded successfully
-
-                # Check if the hosts.txt file exists
-                if [ -f "hosts.txt" ]; then
-                    # Append the downloaded hosts.txt to the current hosts file
-                    cat hosts.txt >> "$hosts_file"
-
-                    # Remove the downloaded hosts.txt file
-                    rm hosts.txt
-
-                    # Echo that the entry has been added
-                    echo "Entry for $host added to $hosts_file"
-                else
-                    echo "Error: Downloaded file hosts.txt does not exist."
-                fi
-            else
-                echo "Error: Failed to download the hosts file."
-            fi
-            ;;
-        --whitelist)
-            # Check if the second argument (the domain) is provided
-            if [ -z "$2" ]; then
-                echo "Error: Please provide a domain to whitelist."
-            else
-                domain="$2"
-                temp=$(mktemp)  # Create a temporary file
-                if sed "/0\.0\.0\.0 $domain/d" "$hosts_file" > "$temp"; then
-                    if mv "$temp" "$hosts_file"; then
-                        echo "Whitelisted $domain in $hosts_file"
-                    else
-                        echo "Error: Failed to replace $hosts_file with the modified content."
-                    fi
-                else
-                    echo "Error: Failed to remove $domain from $hosts_file."
-                fi
-                echo "Done"
-            fi
-            ;;
-        --restore-default)
-            host="https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/Malwack/main/system/etc/hosts"
-
-            # Set a timeout value in seconds
-            timeout_seconds=60
-            chmod 644 "$hosts_file"
-
-            # Download the hosts file with curl renaming it to hosts.txt
-            if timeout $timeout_seconds curl -o hosts.txt "$host"; then
-                # Check if the file was downloaded successfully
-
-                # Check if the hosts.txt file exists
-                if [ -f "hosts.txt" ]; then
-
-                    # Remove the current hosts file if it exists
-                    if [ -f "$hosts_file" ]; then
-                        rm -f "$hosts_file"
-                        echo "Removed $hosts_file"
-                    fi
-
-                    # Append the downloaded hosts.txt to the current hosts file
-                    touch "$hosts_file"
-                    echo "Created $hosts_file"
-                    chmod 644 "$hosts_file"
-                    echo "Restored permissions for $hosts_file"
-                    cat hosts.txt >> "$hosts_file"
-                    echo "Added entries from hosts.txt to $hosts_file"
-
-                    # Remove the downloaded hosts.txt file
-                    rm hosts.txt
-                    echo "Removed hosts.txt"
-
-                    # Echo that the entry has been added
-                    echo "Entry for $host added to $hosts_file"
-                else
-                    echo "Error: Downloaded file hosts.txt does not exist."
-                fi
-            else
-                echo "Error: Download failed. This is either an issue on your network or GitHub's backend."
-                exit 1
-            fi
-            ;;
-        --help)
-            echo "Usage: malwack [--restore[-original | -default] | --blockporn | --whitelist <domain> | --help]"
-            echo "--restore-default: Restore the hosts file to the modules default state & updates it."
-            echo "--restore-original: Restore the hosts file to its original state. (No blocking)"
-            echo "--blockporn: Block pornographic websites by adding entries to the hosts file."
-            echo "--whitelist <domain>: Remove the specified domain from the hosts file."
-            echo "--help: Display this help message."
-            ;;
-        *)
-            echo "Invalid option. Use 'malwack --help' for usage information."
-            ;;
-    esac
-fi
+# === Main Logic ===
+case "$1" in
+    --restore-original)
+        restore_original
+        ;;
+    --blockporn)
+        block_porn
+        ;;
+    --whitelist)
+        whitelist_domain "$2"
+        ;;
+    --restore-default)
+        restore_default
+        ;;
+    --help)
+        show_help
+        ;;
+    *)
+        echo "Invalid option. Use 'malwack --help' for usage information."
+        ;;
+esac
