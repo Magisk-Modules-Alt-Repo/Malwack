@@ -1,0 +1,30 @@
+#!/system/bin/sh
+
+# Define paths
+hosts_file="/system/etc/hosts"
+tmp_dir="/data/local/tmp"
+log_file="/data/adb/malwack.log"
+merged_hosts="/data/local/tmp/hosts"
+
+# External Hosts URLs
+URL1="https://hosts.ubuntu101.co.za/hosts"
+URL2="https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+URL3="https://www.github.developerdan.com/hosts/lists/ads-and-tracking-extended.txt"
+
+# Download and combine hosts files
+echo "Downloading and merging hosts files..." >> "$log_file"
+curl -s "$URL1" > "$tmp_dir/hosts1" || { echo "Failed to download URL1" >> "$log_file"; exit 1; }
+curl -s "$URL2" > "$tmp_dir/hosts2" || { echo "Failed to download URL2" >> "$log_file"; exit 1; }
+curl -s "$URL3" > "$tmp_dir/hosts3" || { echo "Failed to download URL3" >> "$log_file"; exit 1; }
+
+# Merge hosts files into a temporary file
+cat "$tmp_dir/hosts1" "$tmp_dir/hosts2" "$tmp_dir/hosts3" >> hosts
+
+cat /dev/null > /system/etc/hosts
+cat $tmp_dir/hosts /system/etc/hosts
+
+# Clean up temporary files
+rm "$tmp_dir/hosts1" "$tmp_dir/hosts2" "$tmp_dir/hosts3" 
+
+# Final log message
+echo "Hosts file updated successfully with permissions!" >> "$log_file"
