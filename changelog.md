@@ -1,3 +1,6 @@
+## v5.0.3
+- Updated hosts file
+
 ## v5.0.2
 - Update main command, fixed issues with it not loading hosts file and giving errors, updated and formatted main file, auto-save when setting to block p*rn so when you update you won't need to do it again.
 ## v5.0.1
