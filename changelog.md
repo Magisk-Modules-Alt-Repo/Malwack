@@ -1,3 +1,18 @@
+## v5.0.8
+- Updated hosts file
+
+## v5.0.7
+- Updated hosts file
+
+## v5.0.6
+- Updated hosts file
+
+## v5.0.5
+- Updated hosts file
+
+## v5.0.4
+- Updated hosts file
+
 ## v5.0.3
 - Updated hosts file
 
