@@ -1,3 +1,6 @@
+## v5.0.18
+- Updated hosts file
+
 ## v5.0.17
 - Updated hosts file
 
