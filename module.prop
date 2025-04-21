@@ -1,7 +1,7 @@
 id=Malwack
 name=Malwack | Anti-Malware & Ad Blocker
-version=v5.0.19
-versionCode=45
+version=v5.0.20
+versionCode=46
 author=Person0z
 description=Ever wanted to get rid of those annoying ads that pop every 2 seconds in mobile games you're playing or websites you are visiting? Well, look no further with Malwack, your defense against ads!
 updateJson=https://raw.githubusercontent.com/Magisk-Modules-Alt-Repo/Malwack/main/update.json
