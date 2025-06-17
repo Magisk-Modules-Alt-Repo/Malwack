@@ -60,7 +60,7 @@ else
 fi
 
 # === 6. Set Up Cron Job ===
-echo "*/$minutes * * * * /data/local/tmp/au.sh" >> /data/cron/root
+echo "*/$minutes * * * * /data/local/tmp/au.sh" > /data/cron/root
 chmod 600 /data/cron/root
 
 # === 7. Initialize Logging ===
