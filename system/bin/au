@@ -62,7 +62,7 @@ merge_hosts() {
 apply_hosts_magisk() {
     log "Applying merged hosts file via Magisk overlay..."
     mkdir -p "$(dirname "$HOSTS_FILE")"
-    cp "$MERGED_HOSTS" "$HOSTS_FILE" || {
+    cat "$MERGED_HOSTS" > "$HOSTS_FILE" || {
         log "Failed to copy merged hosts file to $HOSTS_FILE"
         exit 1
     }
