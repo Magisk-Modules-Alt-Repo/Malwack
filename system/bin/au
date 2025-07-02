@@ -90,11 +90,6 @@ update_module_prop() {
 # === Main Logic ===
 log "Starting dynamic hosts update..."
 
-# Ensure Root Permissions
-if [ "$(id -u)" -ne 0 ]; then
-    abort "Root access is required to run this script."
-fi
-
 # Download, Merge, and Apply Hosts
 download_hosts
 merge_hosts
