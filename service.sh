@@ -2,7 +2,7 @@
 
 # === 1. Wait for System Boot ===
 until [ "$(getprop sys.boot_completed)" = "1" ]; do
-    sleep 10
+    sleep 5
 done
 
 # Ensure stability after boot
@@ -69,7 +69,7 @@ echo "Cron interval set to every $minutes minutes." >> /data/adb/malwack.log
 echo "" >> /data/adb/malwack.log
 
 # === 8. Run Update Script Immediately ===
-/system/bin/sh /data/local/tmp/au.sh >> /data/adb/malwack.log 2>&1
+sh /data/local/tmp/au.sh >> /data/adb/malwack.log 2>&1 &
 
 # === 9. Start Cron Daemon ===
 "$busybox_path" crond -c /data/cron -L /data/adb/malwack.log
